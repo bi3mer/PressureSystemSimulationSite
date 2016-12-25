@@ -45,6 +45,10 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             s.wfile.write("site___.com/10000/4")
 
 if __name__ == '__main__':
+    # get environment port
+    PORT_NUMBER = int(os.environ.get("PORT", 5000))
+    
+    # create server
     server_class = BaseHTTPServer.HTTPServer
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
     print time.asctime(), "Server Starts - %s:%s" % (HOST_NAME, PORT_NUMBER)
