@@ -4,10 +4,8 @@ import time
 import BaseHTTPServer
 from movement import create_graph
 
-
 HOST_NAME = 'localhost' # !!!REMEMBER TO CHANGE THIS!!!
-PORT_NUMBER = 3000 # Maybe set this to 9000.
-
+PORT_NUMBER = int(os.environ.get("PORT", PORT_NUMBER)) # Maybe set this to 9000.
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_HEAD(s):
@@ -45,9 +43,6 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             s.wfile.write("site___.com/10000/4")
 
 if __name__ == '__main__':
-    # get environment port
-    PORT_NUMBER = int(os.environ.get("PORT", PORT_NUMBER))
-    
     # create server
     server_class = BaseHTTPServer.HTTPServer
     httpd = server_class((HOST_NAME, PORT_NUMBER), MyHandler)
