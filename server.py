@@ -46,7 +46,7 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
 if __name__ == '__main__':
     # get environment port
-    PORT_NUMBER = int(os.environ.get("PORT", 5000))
+    PORT_NUMBER = int(os.environ.get("PORT", PORT_NUMBER))
     
     # create server
     server_class = BaseHTTPServer.HTTPServer
