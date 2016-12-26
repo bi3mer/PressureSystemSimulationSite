@@ -5,7 +5,6 @@ import math
 import sys
 
 center_x = center_y = 0
-num_pressure_systems = 4
 max_border_length = 50
 low_pressure = 'blue'
 high_pressure = 'red'
@@ -13,9 +12,8 @@ x='x'
 y='y'
 t='t'
 pressure_types = [low_pressure, high_pressure]
-pressure_systems = []
 
-def plot_points():
+def plot_points(pressure_systems):
     fig = plt.figure()
     ax = fig.gca()
     
@@ -34,9 +32,9 @@ def plot_points():
 
     fig.savefig("plt.png")
 
-def convert_to_unit_coordinates(index, size):
+def convert_to_unit_coordinates(index, size, pressure_systems):
     # calculate length
-    length = math.sqrt(pow(pressure_systems[index][x][size],2) + pow(pressure_systems[index][y][size],2))
+    length = math.sqrt(pow(pressure_systems[index][x][size], 2) + pow(pressure_systems[index][y][size], 2))
     
     # return both points cnoverted into unit vector
     return pressure_systems[index][x][size] / length, pressure_systems[index][y][size] / length, length
@@ -58,13 +56,13 @@ def bound_coordinate(cor):
 # 1. low and high: clockwise rotation
 # 2. high and high: away from
 # 3. low and low: away from
-def simulate_step():
+def simulate_step(pressure_systems, num_pressure_systems):
     for i in range(num_pressure_systems):
         # get index for current length of arrays before the appends begin
         size  = len(pressure_systems[i][x]) - 1
         
         # get unity vector conversions for index i
-        i_unit_x, i_unit_y, dist = convert_to_unit_coordinates(i,size)
+        i_unit_x, i_unit_y, dist = convert_to_unit_coordinates(i,size,pressure_systems)
         x_forces = y_forces = 0
 
         # apply forces from other systems
@@ -74,7 +72,7 @@ def simulate_step():
                 continue
                 
             # get unit vector conversions for index j
-            j_unit_x, j_unit_y, bad_dist = convert_to_unit_coordinates(j,size)
+            j_unit_x, j_unit_y, bad_dist = convert_to_unit_coordinates(j,size,pressure_systems)
             
             ## Forces applies by pressure systems
             # calculate vector differerences 
@@ -102,10 +100,8 @@ def simulate_step():
         pressure_systems[i][x].append(bound_coordinate(x_total))
         pressure_systems[i][y].append(bound_coordinate(y_total))
 
-def create_graph(steps, num_systems):
+def create_graph(steps, num_pressure_systems):
     print time.asctime(), "Creating graph."
-
-    num_pressure_systems = num_systems
 
     # create pressure systems with random values
     pressure_systems = []
@@ -118,9 +114,9 @@ def create_graph(steps, num_systems):
 
     # run steps
     for i in range(steps):
-        simulate_step()
+        simulate_step(pressure_systems, num_pressure_systems)
 
-    plot_points()
+    plot_points(pressure_systems)
 
 if __name__ == '__main__':
-    create_graph(sys.argv[1], sys.argv[2])
+    create_graph(int(sys.argv[1]), int(sys.argv[2]))

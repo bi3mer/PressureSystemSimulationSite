@@ -17,30 +17,30 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """
         Respond to a GET request.
         """
-        try:
-            # get info from systems
-            steps   = int(s.path.split('/')[1])
-            systems = int(s.path.split('/')[2])
+        # try:
+        # get info from systems
+        steps   = int(s.path.split('/')[1])
+        systems = int(s.path.split('/')[2])
 
-            # create graph
-            create_graph(steps, systems)
-            img = open("plt.png")
+        # create graph
+        create_graph(steps, systems)
+        img = open("plt.png")
 
-            # write headers
-            s.send_response(200)
-            s.send_header("Content-type", "image/png")
-            s.end_headers()
+        # write headers
+        s.send_response(200)
+        s.send_header("Content-type", "image/png")
+        s.end_headers()
 
-            # write content
-            s.wfile.write(img.read())
-            img.close()
-        except:
-            s.send_response(404)
-            s.send_header("Content-type", "text/html")
-            s.end_headers()
+        # write content
+        s.wfile.write(img.read())
+        img.close()
+        # except:
+        #     s.send_response(404)
+        #     s.send_header("Content-type", "text/html")
+        #     s.end_headers()
 
-            s.wfile.write("Error. path should be site___.com/NUM_STEPS/NUM_PRESSURE_SYSTEMS")
-            s.wfile.write("site___.com/10000/4")
+        #     s.wfile.write("Error. path should be site___.com/NUM_STEPS/NUM_PRESSURE_SYSTEMS")
+        #     s.wfile.write("site___.com/10000/4")
 
 if __name__ == '__main__':
     # create server
