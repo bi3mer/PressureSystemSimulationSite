@@ -4,8 +4,8 @@ import time
 import BaseHTTPServer
 from movement import create_graph
 
-HOST_NAME = 'localhost' # !!!REMEMBER TO CHANGE THIS!!!
-PORT_NUMBER = int(os.environ.get("$PORT", 5000)) # Maybe set this to 9000.
+HOST_NAME = '0.0.0.0' 
+PORT_NUMBER = int(os.environ.get("PORT", 5000))
 
 class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_HEAD(s):
