@@ -15,14 +15,6 @@ t='t'
 pressure_types = [low_pressure, high_pressure]
 pressure_systems = []
 
-# create pressure systems with random values
-for i in range(num_pressure_systems):
-    pressure_systems.append({'x': [], 'y':[],'t':random.choice(pressure_types)})
-    
-    # give random coordinate for first point
-    pressure_systems[i][x].append(random.randrange(-max_border_length/2, max_border_length/2))
-    pressure_systems[i][y].append(random.randrange(-max_border_length/2, max_border_length/2))
-
 def plot_points():
     fig = plt.figure()
     ax = fig.gca()
@@ -112,6 +104,18 @@ def simulate_step():
 
 def create_graph(steps, num_systems):
     print time.asctime(), "Creating graph"
+
+    # create pressure systems with random values
+    pressure_systems = []
+    for i in range(num_pressure_systems):
+        pressure_systems.append({'x': [], 'y':[],'t':random.choice(pressure_types)})
+        
+        # give random coordinate for first point
+        pressure_systems[i][x].append(random.randrange(-max_border_length/2, max_border_length/2))
+        pressure_systems[i][y].append(random.randrange(-max_border_length/2, max_border_length/2))
+
+
+
     num_pressure_systems = num_systems
     for i in range(steps):
         simulate_step()
