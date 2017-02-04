@@ -4,16 +4,23 @@ import time
 import math
 import sys
 
-center_x = center_y = 0
+num_pressure_systems = 10
 max_border_length = 50
 low_pressure = 'blue'
 high_pressure = 'red'
-x='x'
-y='y'
-t='t'
-pressure_types = [low_pressure, high_pressure]
 
-def plot_points(pressure_systems):
+low_pressure_force  = 3.5
+high_pressure_force = 2.5
+
+center_x = center_y = 0
+x=0
+y=1
+vec='vec'
+t='t'
+pressure_types   = [low_pressure, high_pressure]
+pressure_systems = []
+
+def plot_points(pressure_systems): # pressure_systems
     fig = plt.figure()
     ax = fig.gca()
     
@@ -28,28 +35,92 @@ def plot_points(pressure_systems):
     
     # plot each system
     for system in pressure_systems:
-        ax.plot(system[x], system[y], '*-', color=system[t])
+        x_cor = [a[x] for a in system[vec]]
+        y_cor = [a[y] for a in system[vec]]
+        
+        ax.plot(x_cor, y_cor, '*-', color=system[t])
 
     fig.savefig("plt.png")
 
-def convert_to_unit_coordinates(index, size, pressure_systems):
-    # calculate length
-    length = math.sqrt(pow(pressure_systems[index][x][size], 2) + pow(pressure_systems[index][y][size], 2))
+def add(a1, a2):
+    # note, not adding checking to see if the arrays
+    # are the same length. IF they aren't, then this
+    # will break.
+    new_a = []
     
-    # return both points cnoverted into unit vector
-    return pressure_systems[index][x][size] / length, pressure_systems[index][y][size] / length, length
+    for i in range(len(a1)):
+        # add sum of two array elements
+        new_a.append(a1[i] + a2[i])
+        
+    return new_a
+
+def sub(a1, a2):
+    # note, not adding checking to see if the arrays
+    # are the same length. IF they aren't, then this
+    # will break.
+    new_a = []
+    
+    for i in range(len(a1)):
+        # add sum of two array elements
+        new_a.append(a1[i] - a2[i])
+        
+    return new_a
+
+def div(a1, const):
+    new_a = []
+    
+    for i in range(len(a1)):
+        # add sum of two array elements
+        new_a.append(a1[i] / const)
+        
+    return new_a
+
+def mult(a1, const):
+    new_a = []
+    
+    for i in range(len(a1)):
+        # add sum of two array elements
+        new_a.append(a1[i] * const)
+        
+    return new_a
+
+def dot(a1, a2):
+    # incomplete implementation of dot product
+    
+    total = 0
+    
+    for i in range(len(a1)):
+        total += a1[i] * a2[i]
+        
+    return total
+
+
+def l1_distnace_2d(a1, a2):
+    return abs(a1[0] - a2[0]) + abs(a1[1] - a2[1])
+
+def l2_distance_2d(a1, a2):
+    return (a1[0] - a2[0])**2 + abs(a1[0] - a2[1])**2
+
+def perpindicular_2d(a1):
+    # http://mathworld.wolfram.com/PerpendicularVector.html
+    return -a1[1], a1[0]
+
+def unit_vector(a1):
+    return div(a1, math.sqrt(float(dot(a1, a1))))
 
 def calculate_perpindicular_vector(x_cor, y_cor):
     # http://mathworld.wolfram.com/PerpendicularVector.html
     return -y_cor, x_cor
 
-def bound_coordinate(cor):
+def bound_cor_value(cor):
     if cor < max_border_length and cor > -max_border_length:
         return cor
     elif cor < 0:
         return -max_border_length
     return max_border_length
 
+def bound_coordinate_2d(cor):
+    return bound_cor_value(cor[x]), bound_cor_value(cor[y])
 
 # This will simulate a step in time where the two pressure systems interact with eachother. 
 # For reference the following list shows what happens when there are two systems.
@@ -59,11 +130,13 @@ def bound_coordinate(cor):
 def simulate_step(pressure_systems, num_pressure_systems):
     for i in range(num_pressure_systems):
         # get index for current length of arrays before the appends begin
-        size  = len(pressure_systems[i][x]) - 1
+        size = len(pressure_systems[i][vec]) - 1
         
         # get unity vector conversions for index i
-        i_unit_x, i_unit_y, dist = convert_to_unit_coordinates(i,size,pressure_systems)
-        x_forces = y_forces = 0
+        unit_i_vector = unit_vector(pressure_systems[i][vec][size])
+        
+        # initialize forces
+        force = [0,0]
 
         # apply forces from other systems
         for j in range(num_pressure_systems):
@@ -72,33 +145,34 @@ def simulate_step(pressure_systems, num_pressure_systems):
                 continue
                 
             # get unit vector conversions for index j
-            j_unit_x, j_unit_y, bad_dist = convert_to_unit_coordinates(j,size,pressure_systems)
+            unit_j_vector = unit_vector(pressure_systems[j][vec][size])
             
             ## Forces applies by pressure systems
             # calculate vector differerences 
-            x_force = i_unit_x - j_unit_x
-            y_force = i_unit_y - j_unit_y
+            new_force = sub(unit_i_vector, unit_j_vector)
 
             # check if pressure system types match
             if pressure_systems[i][t] != pressure_systems[j][t]:
                 # calculate vector differerences so they pull towards eachother 
                 # and get perpindicular result
-                x_force, y_force = calculate_perpindicular_vector(-x_force, -y_force)
+                new_force = perpindicular_2d(mult(new_force, -1))
+                
+            # reduce force based on distance between coordinates
+            new_force = div(new_force, l2_distance_2d(unit_i_vector, unit_j_vector))
             
-            x_forces += x_force
-            y_forces += y_force
+            # add forces together
+            force = add(force, unit_vector(new_force))
                 
         ## Forces applied by center of system
-        c_x_force = -i_unit_x * 2
-        c_y_force = -i_unit_y * 2
+        c_force = None
+        if pressure_systems[i][t] == low_pressure:
+            c_force = mult(unit_i_vector, -1 * low_pressure_force)
+        else:
+            c_force = mult(unit_i_vector, -1 * high_pressure_force)
         
         # calculate new values
-        x_total = pressure_systems[i][x][size] + x_forces + c_x_force
-        y_total = pressure_systems[i][y][size] + y_forces + c_y_force
-
-        # add new coordinates to lists
-        pressure_systems[i][x].append(bound_coordinate(x_total))
-        pressure_systems[i][y].append(bound_coordinate(y_total))
+        new_coordinate = add(add(pressure_systems[i][vec][size], c_force), force)
+        pressure_systems[i][vec].append(bound_coordinate_2d(new_coordinate))
 
 def create_graph(steps, num_pressure_systems):
     print time.asctime(), "Creating graph."
@@ -106,11 +180,11 @@ def create_graph(steps, num_pressure_systems):
     # create pressure systems with random values
     pressure_systems = []
     for i in range(num_pressure_systems):
-        pressure_systems.append({'x': [], 'y': [],'t': random.choice(pressure_types)})
+        pressure_systems.append({'vec': [[]],'t':random.choice(pressure_types)})
         
         # give random coordinate for first point
-        pressure_systems[i][x].append(random.randrange(-max_border_length/2, max_border_length/2))
-        pressure_systems[i][y].append(random.randrange(-max_border_length/2, max_border_length/2))
+        pressure_systems[i][vec][0].append(random.randrange(-max_border_length, max_border_length))
+        pressure_systems[i][vec][0].append(random.randrange(-max_border_length, max_border_length))
 
     # run steps
     for i in range(steps):
